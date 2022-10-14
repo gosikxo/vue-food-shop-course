@@ -130,6 +130,12 @@
             return p.name === name
           })
           return product.price.USD
+        },
+        calculateTotal() {
+          const total = Object.entries(this.cart).reduce((acc, curr, index) => {
+            return acc + (curr[1] * this.getPrice(curr[0]))
+          }, 0)
+          return total.toFixed(2)
         }
       },
       template: `
@@ -161,7 +167,7 @@
                   <td>{{key}}</td>
                   <td>\${{ getPrice(key) }}</td>
                   <td class="center">{{ quantity }}</td>
-                  <td>\${{ cart.carrots * 4.82 }}</td>
+                  <td>\${{ quantity * getPrice(key) }}</td>
                   <td class="center">
                     <button class="btn btn-light cart-remove">
                       &times;
@@ -173,7 +179,7 @@
 
             <p class="center"><em>No items in cart</em></p>
             <div class="spread">
-              <span><strong>Total:</strong> \${{ cartTotal }}</span>
+              <span><strong>Total:</strong> \${{ calculateTotal() }}</span>
               <button class="btn btn-light">Checkout</button>
             </div>
           </div>
