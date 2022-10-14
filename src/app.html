@@ -43,7 +43,7 @@
 
       <div class="recommended">
 
-        <div v-for="product in inventory.slice(0,3)" class="card">
+        <div v-for="(product, i) in inventory.slice(0,3)" :key="product.id" class="card">
           <div class="card-title">
             {{ product.name }}
           </div>
@@ -63,7 +63,7 @@
                   <label>Price:</label>
                 </div>
                 <div class="cell">
-                 ${{product.price.USD}}
+                  ${{product.price.USD}}
                 </div>
               </div>
               <div class="row">
@@ -71,13 +71,13 @@
                   <label>Quantity:</label>
                 </div>
                 <div class="cell">
-                  <input type="number" v-model="inventory.carrots">
+                  <input type="number" v-model="product.quantity">
                 </div>
               </div>
             </form>
           </div>
           <div class="card-footer">
-            <button @click="addToCart('carrots')" class="btn btn-light">
+            <button @click="addToCart(product.name, i)" class="btn btn-light">
               Add to cart
             </button>
           </div>
@@ -86,7 +86,7 @@
       </div>
 
     </main>
-    <sidebar v-if="showSidebar" :toggle="toggleSidebar" :cart="cart" />
+    <sidebar v-if="showSidebar" :toggle="toggleSidebar" :cart="cart" :inventory="inventory" />
     <footer>
     </footer>
 
@@ -98,16 +98,13 @@
         return {
           showSidebar: false,
           inventory: [],
-          cart: {
-            carrots: 0,
-            pineapples: 0,
-            cherries: 0
-          }
+          cart: {}
         }
       },
       methods: {
-        addToCart(type) {
-          this.cart[type] += this.inventory[type]
+        addToCart(name, index) {
+          if (!this.cart[name]) this.cart[name] = 0
+          this.cart[name] += this.inventory[index].quantity
           console.log(this.cart)
         },
         toggleSidebar() {
@@ -121,10 +118,18 @@
       }
     })
     app.component('sidebar', {
-      props: ['toggle', 'cart'],
+      props: ['toggle', 'cart', 'inventory'],
       computed: {
         cartTotal() {
           return (this.cart.carrots * 4.82).toFixed(2)
+        }
+      },
+      methods: {
+        getPrice(name) {
+          const product = this.inventory.find((p) => {
+            return p.name === name
+          })
+          return product.price.USD
         }
       },
       template: `
@@ -151,11 +156,11 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
+                <tr v-for="(quantity, key, i) in cart" :key="i">
                   <td><i class="icofont-carrot icofont-3x"></i></td>
-                  <td>Carrot</td>
-                  <td>$1.00</td>
-                  <td class="center">{{cart.carrots}}</td>
+                  <td>{{key}}</td>
+                  <td>\${{ getPrice(key) }}</td>
+                  <td class="center">{{ quantity }}</td>
                   <td>\${{ cart.carrots * 4.82 }}</td>
                   <td class="center">
                     <button class="btn btn-light cart-remove">
